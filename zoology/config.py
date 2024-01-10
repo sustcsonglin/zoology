@@ -124,4 +124,7 @@ class TrainConfig(BaseConfig):
     sweep_id: str = None
     run_id: str = "default"
 
+    project_name: str = 'zoology'
+    entity: str = 'sonta'
+
 

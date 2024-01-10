@@ -122,7 +122,7 @@ class TransformerBlock(nn.Module):
         residual = (dropped + residual) if residual is not None else dropped
         hidden_states = self.norm1(residual.to(dtype=self.norm1.weight.dtype))
         hidden_states = self.sequence_mixer(hidden_states)
-            
+    
         dropped = self.drop_path2(self.dropout2(hidden_states))
         residual = (dropped + residual) if residual is not None else dropped
         hidden_states = self.norm2(residual.to(dtype=self.norm2.weight.dtype))
