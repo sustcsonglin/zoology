@@ -3,7 +3,7 @@
 # Retentive Network: A Successor to Transformer for Large Language Models"[https://arxiv.org/pdf/2307.08621.pdf]
 
 from fla.ops.triton.gla import fused_chunk_gla, chunk_gla, fused_recurrent_gla
-from fla.module.rmsnorm import RMSNorm
+from fla.modules.rmsnorm import RMSNorm
 from einops import rearrange
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,7 +24,7 @@ class GatedLinearAttention(nn.Module):
                  num_heads=4,
                  gate_fn="swish",
                  layernorm_eps=1e-5,
-                 gate_logit_normalizer=64,
+                 gate_logit_normalizer=32,
                  gate_logit_min=-3,
                  gate_low_rank_dim=16,  
                  *args, **kwargs):

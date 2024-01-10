@@ -3,11 +3,11 @@
 # Retentive Network: A Successor to Transformer for Large Language Models"[https://arxiv.org/pdf/2307.08621.pdf]
 
 from fla.ops.triton.retention import fused_chunk_retention, parallel_retention, fused_recurrent_retention
-from fla.module.rmsnorm import RMSNorm
+from fla.modules.rmsnorm import RMSNorm
 from einops import rearrange
 import torch.nn as nn
 import torch.nn.functional as F
-from fla.module.rotary import RotaryEmbedding
+from fla.modules.rotary import RotaryEmbedding
 
 
 def get_activation_fn(activation):
