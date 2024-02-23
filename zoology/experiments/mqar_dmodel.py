@@ -1,6 +1,8 @@
 import uuid
+
 import numpy as np
-from zoology.config import TrainConfig, ModelConfig, DataConfig, LoggerConfig
+
+from zoology.config import DataConfig, LoggerConfig, ModelConfig, TrainConfig
 
 sweep_id = uuid.uuid4().hex[:6]
 sweep_name = "monarch_attn" + sweep_id
@@ -10,9 +12,9 @@ VOCAB_SIZE = 8_192
 configs = []
 for input_seq_len, num_kv_pairs in [
     # (64, 4),
-    (128, 8),
-    # (256, ),
-    # (512, 64),
+    # (128, 8),
+    (256, 64),
+    # (512, 16),
 ]:
     if input_seq_len == 1024:
         batch_size = 64
@@ -44,7 +46,10 @@ for input_seq_len, num_kv_pairs in [
     for d_model in [
         # 64, 
         # 64, 
+        # 64
+        # 64
         64
+        # 256
         # 256, 
         # 512
     ]:
@@ -53,7 +58,6 @@ for input_seq_len, num_kv_pairs in [
             i += 1
             if i != 2:
                 continue
-        
             MIXERS = {
                 "attention": dict(
                     name="zoology.mixers.attention.MHA",
@@ -99,10 +103,11 @@ for input_seq_len, num_kv_pairs in [
                         "head_dim": 2
                     }
                 ),
+
                 "gla": dict(
                     name="zoology.mixers.gla.GatedLinearAttention",
                     kwargs={"num_heads": 1,
-                            "l_max": input_seq_len}
+                            }
                 ),
                 "gla2": dict(
                     name="zoology.mixers.hybrid.Hybrid",
@@ -125,11 +130,12 @@ for input_seq_len, num_kv_pairs in [
                             )
                         ]
                     }
-                
                 ),
-
                 "retnet": dict(
                     name="zoology.mixers.retnet.MultiScaleRetention",
+                    kwargs={
+                        "num_heads": 4
+                    }
                 ),
                 "based": dict(
                     name="zoology.mixers.hybrid.Hybrid",
@@ -182,13 +188,12 @@ for input_seq_len, num_kv_pairs in [
                 # "h3"
                 # "base_conv_explicit"
                 # "gla",
-                # 'gla'
+                'gla'
                 # "retnet"
                 # "mamba"
                 # "based",
-                "gla"
+                # "mamba"
             ]:
-
                 if 'mamba' in sequence_mixer:
                     block_type = "MambaBlock"
                 else:

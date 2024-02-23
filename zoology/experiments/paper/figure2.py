@@ -1,7 +1,8 @@
 import uuid
-import numpy as np
-from zoology.config import TrainConfig, ModelConfig, DataConfig, LoggerConfig
 
+import numpy as np
+
+from zoology.config import DataConfig, LoggerConfig, ModelConfig, TrainConfig
 
 sweep_id = uuid.uuid4().hex[:6]
 sweep_name = "figure2" + sweep_id
@@ -9,13 +10,12 @@ sweep_name = "figure2" + sweep_id
 
 VOCAB_SIZE = 8_192
 
-
 configs = []
 for input_seq_len, num_kv_pairs in [
-    (64, 4),
-    (128, 8),
-    (256, 16),
+    # (64, 4),
+    # (128, 8),
     (512, 64),
+    # (256, 16)
 ]:
     if input_seq_len == 1024:
         batch_size = 64
@@ -41,23 +41,36 @@ for input_seq_len, num_kv_pairs in [
                 "test_power_a": 0.01,
                 "random_non_queries": False
             }
-        }   
+        }
     )
 
     for d_model in [
+        # 64,
+        # 128,
+        # 256,
+        # 128,
+        # 64,
+        # 128,
+        # 256,
+        # 512
+        # 512
         64, 
-        128, 
-        256, 
-        512
+        # 128,
+        # 256,
+        # 512
     ]:
-        for lr in  np.logspace(-4, -2, 4):
-            
+        i = 0
+
+        for lr in np.logspace(-4, -2, 4):
+            i += 1
+            if i != 3:
+                continue
             MIXERS = {
                 "attention": dict(
                     name="zoology.mixers.attention.MHA",
                     kwargs={
                         "dropout": 0.1,
-                        "num_heads": 1
+                        "num_heads": 4
                     },
                 ),
                 "hyena": dict(
@@ -118,16 +131,45 @@ for input_seq_len, num_kv_pairs in [
                     name="zoology.mixers.mamba.Mamba",
                     kwargs={}
                 ),
-            }
+                "gla": dict(
+                    name="fla.layers.gla.GatedLinearAttention",
+                    kwargs={
+                        "mode": "fused_recurrent",
+                        "num_heads": 2,
+                        'use_gk': True,
+                        "use_gv": False,
+                        "gate_logit_normalizer": 128,
+                    }                   
+                ),
+                "hedgehog": dict(
+                    name="fla.layers.linear_attn.LinearAttention",
+                    kwargs={
+                        "mode": "chunk",
+                        "num_heads": 2,
+                        # 'use_gk': True,
+                        # "use_gv": False,
+                        # "gate_logit_normalizer": 128,
+                    }                   
+                ),
+                
+                "abc": dict(
+                    name="fla.layers.abc2.ABCAttention",
+                    kwargs={
+                        "num_heads": 1,
+                        }                   
+                ),
 
+                "retnet": dict(
+                    name="fla.layers.multiscale_retention.MultiScaleRetention",
+                    kwargs={
+                        "num_heads": 2,
+                        "mode": "fused_recurrent"
+                    }
+                ),
+            }
             for sequence_mixer in [
-                "attention",
-                "hyena",
-                "rwkv",
-                "base_conv",
-                "h3",
-                "based",
-                "mamba"
+                'hedgehog',
+                # "retnet"
             ]:
 
                 if 'mamba' in sequence_mixer:
@@ -137,7 +179,7 @@ for input_seq_len, num_kv_pairs in [
 
                 model = ModelConfig(
                     d_model=d_model,
-                    n_layers=4 if sequence_mixer != "attention" else 2,
+                    n_layers=2 if sequence_mixer != "attention" else 2,
                     block_type=block_type,
                     max_position_embeddings=input_seq_len if sequence_mixer == "attention" else 0,
                     vocab_size=VOCAB_SIZE,
@@ -152,8 +194,10 @@ for input_seq_len, num_kv_pairs in [
                     run_id=f"{sequence_mixer}-seqlen{input_seq_len}-dmodel{d_model}-lr{lr}-kv{num_kv_pairs}",
                     logger=LoggerConfig(
                         project_name="zoology",
-                        entity="hazy-research"
+                        entity="sonta"
                     )
 
                 )
                 configs.append(config)
+
+
